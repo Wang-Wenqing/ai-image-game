@@ -639,13 +639,29 @@
             </div>
 
             <div class="info-box" id="apiStatus">
-                <p><strong>🤖 AI Features:</strong></p>
+                <p><strong>🤖 AI Detector Setup:</strong></p>
                 <p style="font-size: 0.9em; margin-top: 5px;" id="featureStatus">
                     Loading configuration...
                 </p>
+                
+                <div style="margin-top: 20px; text-align: left;">
+                    <label for="apiKeyInput" style="display: block; margin-bottom: 8px; font-weight: bold;">
+                        🔑 Hugging Face API Key:
+                    </label>
+                    <input 
+                        type="password" 
+                        id="apiKeyInput" 
+                        placeholder="Enter your HF API key (hf_...)" 
+                        style="width: 100%; padding: 12px; border: 2px solid #667eea; border-radius: 8px; font-size: 1em; background: white; color: #333;"
+                    />
+                    <p style="font-size: 0.85em; margin-top: 8px; opacity: 0.8;">
+                        📝 Get free API key: <a href="https://huggingface.co/settings/tokens" target="_blank" style="color: #FFD700; text-decoration: underline;">Create Token</a>
+                        <br>🔒 Your key is stored locally and never shared
+                    </p>
+                </div>
             </div>
             
-            <button class="start-button" onclick="startGame()">Start Game</button>
+            <button class="start-button" onclick="startGame()" id="startGameButton">Start Game</button>
         </div>
     </div>
 
@@ -753,9 +769,9 @@
         // Get free API key at: https://thehive.ai/
         // Free tier: 1,000 requests/month
         // Leave empty ('') to use demo mode
-        // const HIVE_KEY = '';  // ← ADD YOUR HIVE API KEY HERE
+        // const HIVE_API_KEY = '';  // ← ADD YOUR HIVE API KEY HERE
         // NEW (Hugging Face):
-        const HF_KEY = process.env.HUGGINGFACE_TOKEN;
+        const HF_API_KEY = '';  // Will be set by user - DO NOT hardcode API key here!
         const HF_MODEL = 'Organika/sdxl-detector';  // SDXL AI detector - Better accuracy!
         
         // 2. IMAGE DESCRIPTIONS - DISABLED
@@ -931,6 +947,20 @@
                 </span>
             `;
             document.getElementById('featureStatus').innerHTML = statusText;
+            
+            // Load saved API key from localStorage
+            const savedApiKey = localStorage.getItem('hf_api_key');
+            if (savedApiKey) {
+                document.getElementById('apiKeyInput').value = savedApiKey;
+            }
+            
+            // Save API key when user types
+            document.getElementById('apiKeyInput').addEventListener('input', function(e) {
+                const key = e.target.value.trim();
+                if (key) {
+                    localStorage.setItem('hf_api_key', key);
+                }
+            });
         });
 
         function createImageElement(folder, filename, imageId) {
@@ -1201,6 +1231,26 @@
         let currentRoundData = [];
 
         function startGame() {
+            // Get API key from input
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            
+            // Validate API key
+            if (!apiKey || !apiKey.startsWith('hf_')) {
+                alert('⚠️ Please enter a valid Hugging Face API key!\n\n' +
+                      '1. Go to: https://huggingface.co/settings/tokens\n' +
+                      '2. Click "Create new token"\n' +
+                      '3. Select "Read" permission\n' +
+                      '4. Copy and paste the token here\n\n' +
+                      'Your key should start with "hf_"');
+                return;
+            }
+            
+            // Update GAME_CONFIG with user's API key
+            GAME_CONFIG.hfApiKey = apiKey;
+            GAME_CONFIG.useRealDetection = true;
+            
+            console.log('[GAME] API key configured, starting game...');
+            
             document.getElementById('introScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'block';
             loadRound(0);
