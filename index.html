@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can You Beat AI? - Real vs AI Generated Images</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Image List Configuration Screen */
+        .config-screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .config-box {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .config-box h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            color: #667eea;
+            text-align: center;
+        }
+
+        .config-box textarea {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0 20px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: monospace;
+            min-height: 150px;
+        }
+
+        .config-box textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .config-box label {
+            display: block;
+            text-align: left;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .code-example {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        /* Intro Screen */
+        .intro-screen {
+            display: none;
+            min-height: 100vh;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .game-title {
+            font-size: 4em;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: bounceIn 1s ease-out;
+        }
+
+        .game-subtitle {
+            font-size: 2em;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .game-instructions {
+            font-size: 1.3em;
+            max-width: 800px;
+            margin: 20px auto;
+            line-height: 1.6;
+            opacity: 0.85;
+        }
+
+        .start-button {
+            font-size: 1.8em;
+            padding: 20px 60px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            font-weight: bold;
+            margin-top: 30px;
+        }
+
+        .start-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Game Screen */
+        .game-screen {
+            display: none;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .round-info {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .score-board {
+            display: flex;
+            gap: 40px;
+            font-size: 1.5em;
+        }
+
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        /* Images Container */
+        .images-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .image-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .image-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-label {
+            padding: 20px;
+            background: white;
+            color: #333;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .image-selected {
+            border: 5px solid #FF9800;
+            box-shadow: 0 0 0 5px rgba(255, 152, 0, 0.3);
+        }
+
+        .image-correct {
+            border: 5px solid #4CAF50;
+            animation: pulse 0.5s ease;
+        }
+
+        .image-wrong {
+            border: 5px solid #f44336;
+            animation: shake 0.5s ease;
+        }
+
+        /* Choice Section */
+        .choice-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .choice-title {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .choice-subtitle {
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        /* AI Analysis */
+        .ai-analysis {
+            display: none;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            margin: 40px 0;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .ai-title {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #64B5F6;
+        }
+
+        .ai-result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .ai-result-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .ai-result-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+
+        .ai-progress {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .ai-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 1s ease;
+        }
+
+        .ai-description {
+            font-size: 1em;
+            line-height: 1.5;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            font-style: italic;
+        }
+
+        /* Reveal Section */
+        .reveal-section {
+            display: none;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            padding: 50px;
+            border-radius: 20px;
+            margin: 40px 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .reveal-title {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .reveal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .reveal-card {
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Removed colored borders - keeping neutral gray for all images */
+        /* .reveal-card.real {
+            border-color: #4CAF50;
+        }
+
+        .reveal-card.fake {
+            border-color: #f44336;
+        } */
+
+        .reveal-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .reveal-info {
+            padding: 20px;
+            background: white;
+        }
+
+        .reveal-label {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        /* Removed colored text - keeping neutral dark gray for all labels */
+        /* .reveal-label.real {
+            color: #4CAF50;
+        }
+
+        .reveal-label.fake {
+            color: #f44336;
+        } */
+
+        .reveal-description {
+            font-size: 1em;
+            color: #666;
+            line-height: 1.6;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        /* Round Result */
+        .round-result {
+            display: none;
+            text-align: center;
+            padding: 60px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 40px 0;
+        }
+
+        .result-emoji {
+            font-size: 8em;
+            margin-bottom: 20px;
+        }
+
+        .result-text {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        /* Final Screen */
+        .final-screen {
+            display: none;
+            min-height: 100vh;
+            padding: 50px 0;
+        }
+
+        .final-title {
+            font-size: 4em;
+            text-align: center;
+            margin-bottom: 50px;
+            font-weight: bold;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .final-scores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin: 50px 0;
+        }
+
+        .final-score-card {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .final-score-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .final-score-title {
+            font-size: 2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .final-score-value {
+            font-size: 4em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .winner-announcement {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 60px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 50px 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .winner-text {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* Button Styles */
+        .action-button {
+            font-size: 1.8em;
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            font-weight: bold;
+            margin: 20px 10px;
+        }
+
+        .action-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Loading Animation */
+        .loading {
+            text-align: center;
+            font-size: 2em;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .game-title { font-size: 2.5em; }
+            .images-container { grid-template-columns: 1fr; }
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.15);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 700px;
+            font-size: 1.1em;
+        }
+
+        .api-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .api-status.enabled {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .api-status.disabled {
+            background: #FF9800;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Configuration Screen (Hidden - Auto-configured) -->
+    <div class="config-screen" id="configScreen" style="display: none;">
+        <div class="config-box">
+            <h2>📁 Setup Image Lists</h2>
+
+            <label>AI-Generated Images</label>
+            <textarea id="aiImageList" placeholder="portrait1&#10;landscape1&#10;city1&#10;building1&#10;scene1&#10;photo1&#10;art1&#10;image1"></textarea>
+
+            <label>Real Photos</label>
+            <textarea id="realImageList" placeholder="photo1&#10;beach1&#10;nature1&#10;street1&#10;sunset1&#10;mountain1&#10;person1&#10;landscape1"></textarea>
+
+            <div class="code-example">
+                📝 Example:<br>
+                If you have: images/ai/portrait1.jpg<br>
+                Just type: portrait1
+            </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <button class="start-button" onclick="saveConfiguration()">
+                    Save & Start Game
+                </button>
+            </div>
+
+            <p style="margin-top: 20px; font-size: 0.9em; color: #888; text-align: center;">
+                💡 Game will randomly pick 2 AI + 2 Real images per round
+            </p>
+        </div>
+    </div>
+
+    <!-- Intro Screen -->
+    <div class="intro-screen" id="introScreen" style="display: flex;">
+        <div class="container">
+            <h1 class="game-title">🎮 Real vs AI Images</h1>
+            <p class="game-subtitle">Can You Beat AI?</p>
+            
+            <div class="game-instructions">
+                <p><strong>Game Rules:</strong></p>
+                <p style="margin-top: 10px;">
+                    ✨ You'll see 4 random images per round<br>
+                    <strong style="color: #FFD700;">📊 Each round contains exactly: 2 AI-Generated + 2 Real Photos</strong><br>
+                    👆 Click on images you think are <strong>AI-Generated</strong><br>
+                    ✅ Leave <strong>Real Photos</strong> unselected<br>
+                    🤖 Compare your answers with AI Detector<br>
+                    🎯 4 Rounds Total
+                </p>
+            </div>
+
+            <div class="info-box" id="apiStatus">
+                <p><strong>🤖 AI Features:</strong></p>
+                <p style="font-size: 0.9em; margin-top: 5px;" id="featureStatus">
+                    Loading configuration...
+                </p>
+            </div>
+            
+            <button class="start-button" onclick="startGame()">Start Game</button>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div class="game-screen" id="gameScreen">
+        <div class="container">
+            <div class="header">
+                <div class="round-info">
+                    <span id="roundNumber">Round 1</span>
+                </div>
+                <div class="score-board">
+                    <div class="score-item">
+                        <div>👥 Human</div>
+                        <div class="score-value" id="humanScore">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div>🤖 AI</div>
+                        <div class="score-value" id="aiScore">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin: 20px 0; text-align: center;">
+                <p style="font-size: 1.2em; margin: 0;">
+                    📊 <strong>This round contains: 2 AI-Generated Images + 2 Real Photos</strong>
+                </p>
+                <p style="font-size: 0.95em; margin-top: 8px; opacity: 0.9;">
+                    Your goal: Select the 2 AI-generated images!
+                </p>
+            </div>
+
+            <div class="images-container" id="imagesContainer"></div>
+
+            <div class="choice-section">
+                <h2 class="choice-title">👆 Click images you think are AI-Generated</h2>
+                <p class="choice-subtitle">Selected images will be marked with orange border</p>
+                <button class="action-button" id="confirmButton" onclick="confirmChoices()">
+                    Confirm Answer
+                </button>
+            </div>
+
+            <div class="ai-analysis" id="aiAnalysis">
+                <h2 class="ai-title">🤖 AI Detector Analyzing...</h2>
+                <div class="loading" id="aiLoading">
+                    <div class="spinner"></div>
+                    <p>Performing deep analysis...</p>
+                </div>
+                <div class="ai-result-grid" id="aiResults"></div>
+            </div>
+
+            <div class="reveal-section" id="revealSection">
+                <h2 class="reveal-title">✨ Answer Reveal</h2>
+                <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: #f0f0f0; border-radius: 15px;">
+                    <p style="font-size: 1.3em; margin: 0; color: #667eea;">
+                        <strong>📊 Round Summary: 2 AI-Generated + 2 Real Photos</strong>
+                    </p>
+                </div>
+                <div class="reveal-grid" id="revealGrid"></div>
+            </div>
+
+            <div class="round-result" id="roundResult">
+                <div class="result-emoji" id="resultEmoji"></div>
+                <div class="result-text" id="resultText"></div>
+                <button class="action-button" onclick="nextRound()">Next Round</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Screen -->
+    <div class="final-screen" id="finalScreen">
+        <div class="container">
+            <h1 class="final-title">🏆 Game Over</h1>
+            
+            <div class="final-scores">
+                <div class="final-score-card">
+                    <div class="final-score-icon">👥</div>
+                    <div class="final-score-title">Human Team</div>
+                    <div class="final-score-value" id="finalHumanScore">0</div>
+                    <p style="margin-top: 20px; font-size: 1.3em;" id="humanAccuracy"></p>
+                </div>
+                <div class="final-score-card">
+                    <div class="final-score-icon">🤖</div>
+                    <div class="final-score-title">AI Detector</div>
+                    <div class="final-score-value" id="finalAiScore">0</div>
+                    <p style="margin-top: 20px; font-size: 1.3em;" id="aiAccuracy"></p>
+                </div>
+            </div>
+
+            <div class="winner-announcement" id="winnerAnnouncement">
+                <div class="winner-text" id="winnerText"></div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="action-button" onclick="location.reload()">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 🔑 API CONFIGURATION - ADD YOUR API KEYS HERE
+        // ============================================================
+        
+        // 1. HIVE MODERATION API KEY (Optional)
+        // Get free API key at: https://thehive.ai/
+        // Free tier: 1,000 requests/month
+        // Leave empty ('') to use demo mode
+        // const HIVE_API_KEY = '';  // ← ADD YOUR HIVE API KEY HERE
+        // NEW (Hugging Face):
+        const HF_API_KEY = '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';
+        const HF_MODEL = 'Organika/sdxl-detector';  // SDXL AI detector - Better accuracy!
+        
+        // 2. IMAGE DESCRIPTIONS - DISABLED
+        // Descriptions removed to simplify the game
+        const QWEN_API_KEY = '';  // Disabled
+        
+        // ============================================================
+        // END OF API CONFIGURATION
+        // (Don't modify anything below unless you know what you're doing)
+        // ============================================================
+
+        // Helper function for shuffling arrays
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Auto-load image lists from folders
+        const AI_IMAGES = [
+            '_041e7642-71cb-4472-bccf-5c4e89271812',
+            '_144fd310-7ef2-418d-b566-a8f9cee94f2d',
+            '_1801e0c5-9f29-4df5-b5ec-2f7d23160148',
+            '_2ba48d19-e710-42ca-8ac7-1992072c6d39',
+            '_2d6fc805-6618-4e4b-893e-0723de48f7f1',
+            '_3526be6e-3643-411f-985a-4c36c761dfa9',
+            '_3c9e415a-6e30-4e63-8580-e3c4bc1d98ef',
+            '_42d4e015-d515-4150-8232-4b143f6ccd9e',
+            '_4b6ce9f8-7142-4e0b-8724-d88687c1def3',
+            '_5047b437-a888-4735-904c-688369a7158d',
+            '_70833325-7478-4a70-b813-9fa7dc399da7',
+            '_77fda97b-8adb-4b24-b50d-07ca2bfc7131',
+            '_a4830244-1c1f-48b6-b849-ca813c4e3d88',
+            '_a55e4001-feca-422b-a0be-74540d48651f',
+            '_b4f1000b-5f31-4472-8e45-665957410191',
+            '_be80b091-4f8c-433b-b5bf-d3c9cd0422fa',
+            '_c236d319-9b6d-42fe-9142-baa9089077d2',
+            '_ccf609fe-11ed-45ca-b1d1-6a0ba5366d9e',
+            '_cd1be097-4b13-4f24-b40e-dce1e675dc78',
+            '_d9d8f57f-0d01-47ad-b379-d8e3d7d2d921',
+            '_def35226-a20f-48f5-b083-834d194e281c',
+            '_dfb29243-bb09-4dcd-a2ef-048db8193da6',
+            '_e02a7116-535a-4382-9581-2b0647490ccb',
+            '_e172fb70-45d3-4b1a-b0ae-0ee0cba03b85',
+            '_ef355cbe-0df3-4b52-b82f-196dac042969'
+        ];
+
+        const REAL_IMAGES = [
+            'a-rahmat-mn-y4NvKPD2c_I-unsplash',
+            'adrianna-geo-1rBg5YSi00c-unsplash',
+            'andrew-small-EfhCUc_fjrU-unsplash',
+            'bailey-zindel-NRQV-hBF10M-unsplash',
+            'bharath-kumar-5gxJixmQjx0-unsplash',
+            'birmingham-museums-trust-8wcoY3wcbL0-unsplash',
+            'birmingham-museums-trust-HEEvYhNzpEo-unsplash',
+            'boston-public-library-fcyB3TjwAOo-unsplash',
+            'claudio-testa--SO3JtE3gZo-unsplash',
+            'europeana-8E31onOcVXg-unsplash',
+            'europeana-VsnDYMWollM-unsplash',
+            'hans-jurgen-mager-qQWV91TTBrE-unsplash',
+            'jack-finnigan-rriAI0nhcbc-unsplash',
+            'jordan-steranka-snpFW42KR8I-unsplash',
+            'kalen-emsley-Bkci_8qcdvQ-unsplash',
+            'laura-college-K_Na5gCmh38-unsplash',
+            'mark-harpur-K2s_YE031CA-unsplash',
+            'massimiliano-morosinotto-3i5PHVp1Fkw-unsplash',
+            'mcgill-library--Ada_fz3sY8-unsplash',
+            'mcgill-library-eMw-fVXNpME-unsplash',
+            'philipp-pilz-iQRKBNKyRpo-unsplash',
+            'pietro-de-grandi-Q5dMq3cKqec-unsplash',
+            'sean-do-EHLd2utEf68-unsplash',
+            'shubham-dhage-ccykIz9ngX0-unsplash',
+            'simon-twukN12EN7c-unsplash',
+            'sora-khan-bLteUOW7_Ns-unsplash',
+            'stefan-stefancik-QXevDflbl8A-unsplash',
+            'tamara-menzi-n-vnWQmmVoY-unsplash',
+            'uriel-soberanes-MxVkWPiJALs-unsplash'
+        ];
+
+        // Game Configuration
+        // let GAME_CONFIG = {
+        //     aiImages: shuffleArray([...AI_IMAGES]),
+        //     realImages: shuffleArray([...REAL_IMAGES]),
+        //     hiveApiKey: HIVE_API_KEY,
+        //     qwenApiKey: QWEN_API_KEY,
+        //     useRealDetection: HIVE_API_KEY.length > 0,
+        //     useRealDescriptions: QWEN_API_KEY.length > 0,
+        //     totalRounds: 4,
+        //     imagesPerRound: 4,
+        //     aiPerRound: 2,
+        //     realPerRound: 2
+        // };
+
+        let GAME_CONFIG = {
+            aiImages: shuffleArray([...AI_IMAGES]),
+            realImages: shuffleArray([...REAL_IMAGES]),
+            hfApiKey: HF_API_KEY,
+            hfModel: HF_MODEL,
+            qwenApiKey: QWEN_API_KEY,
+            useRealDetection: HF_API_KEY.length > 0,
+            useRealDescriptions: QWEN_API_KEY.length > 0,
+            totalRounds: 4,
+            imagesPerRound: 4,
+            aiPerRound: 2,
+            realPerRound: 2
+        };
+
+        // Save Configuration
+        function saveConfiguration() {
+            const aiList = document.getElementById('aiImageList').value.trim();
+            const realList = document.getElementById('realImageList').value.trim();
+
+            if (!aiList || !realList) {
+                alert('Please enter at least some image filenames for both AI and Real categories!');
+                return;
+            }
+
+            GAME_CONFIG.aiImages = aiList.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            GAME_CONFIG.realImages = realList.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+            if (GAME_CONFIG.aiImages.length < GAME_CONFIG.aiPerRound * GAME_CONFIG.totalRounds) {
+                alert(`You need at least ${GAME_CONFIG.aiPerRound * GAME_CONFIG.totalRounds} AI images for ${GAME_CONFIG.totalRounds} rounds!`);
+                return;
+            }
+
+            if (GAME_CONFIG.realImages.length < GAME_CONFIG.realPerRound * GAME_CONFIG.totalRounds) {
+                alert(`You need at least ${GAME_CONFIG.realPerRound * GAME_CONFIG.totalRounds} Real images for ${GAME_CONFIG.totalRounds} rounds!`);
+                return;
+            }
+
+            GAME_CONFIG.aiImages = shuffleArray(GAME_CONFIG.aiImages);
+            GAME_CONFIG.realImages = shuffleArray(GAME_CONFIG.realImages);
+
+            showIntroScreen();
+        }
+
+        function showIntroScreen() {
+            document.getElementById('configScreen').style.display = 'none';
+            document.getElementById('introScreen').style.display = 'flex';
+            
+            const statusText = `
+                AI Detector Model: <span class="api-status enabled">
+                    <a href="https://huggingface.co/Organika/sdxl-detector" target="_blank" style="color: white; text-decoration: underline;">
+                        Organika/sdxl-detector
+                    </a>
+                </span>
+            `;
+            document.getElementById('featureStatus').innerHTML = statusText;
+        }
+
+
+        // function showIntroScreen() {
+        //     document.getElementById('configScreen').style.display = 'none';
+        //     document.getElementById('introScreen').style.display = 'flex';
+            
+        //     const statusText = GAME_CONFIG.useRealDetection ? 
+        //         '✅ Real-time AI Detection Enabled (Hugging Face)' :
+        //         '⚠️ Demo Mode - Using folder-based detection';
+            
+        //     document.getElementById('featureStatus').innerHTML = statusText;
+        // }
+        
+        // Auto-initialize on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const statusText = `
+                AI Detector Model: <span class="api-status enabled">
+                    <a href="https://huggingface.co/Organika/sdxl-detector" target="_blank" style="color: white; text-decoration: underline;">
+                        Organika/sdxl-detector
+                    </a>
+                </span>
+            `;
+            document.getElementById('featureStatus').innerHTML = statusText;
+        });
+
+        function createImageElement(folder, filename, imageId) {
+            const img = document.createElement('img');
+            img.alt = imageId;
+            img.dataset.folder = folder;
+            img.dataset.filename = filename;
+            
+            img.src = `images/${folder}/${filename}.jpg`;
+            
+            img.onerror = function() {
+                if (img.src.endsWith('.jpg')) {
+                    img.src = `images/${folder}/${filename}.jpeg`;
+                } else {
+                    img.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23ddd' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='16'%3EImage not found%3C/text%3E%3C/svg%3E`;
+                }
+            };
+            
+            return img;
+        }
+
+        // async function detectWithHiveAPI(imageUrl) {
+        //     if (!GAME_CONFIG.useRealDetection) {
+        //         return {
+        //             isAI: Math.random() > 0.5,
+        //             confidence: 75 + Math.random() * 20,
+        //             source: 'demo'
+        //         };
+        //     }
+
+        //     try {
+        //         const response = await fetch('https://api.thehive.ai/api/v2/task/sync', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Authorization': `Token ${GAME_CONFIG.hiveApiKey}`,
+        //                 'Content-Type': 'application/json'
+        //             },
+        //             body: JSON.stringify({
+        //                 url: imageUrl,
+        //                 models: ['ai_generated']
+        //             })
+        //         });
+
+        //         const data = await response.json();
+                
+        //         if (data.status && data.status[0].response.output) {
+        //             const output = data.status[0].response.output[0];
+        //             const aiScore = output.classes.find(c => c.class === 'ai_generated')?.score || 0;
+                    
+        //             return {
+        //                 isAI: aiScore > 0.5,
+        //                 confidence: aiScore * 100,
+        //                 source: 'hive'
+        //             };
+        //         }
+        //     } catch (error) {
+        //         console.error('Hive API error:', error);
+        //     }
+
+        //     return null;
+        // }
+
+
+        async function detectWithHuggingFace(imageDataURL, retryCount = 0) {
+            console.log(`[HF] Starting detection (attempt ${retryCount + 1})...`);
+            
+            if (!GAME_CONFIG.useRealDetection) {
+                console.log('[HF] Using demo mode (no API key)');
+                // Demo mode: use folder-based detection
+                return {
+                    isAI: null,  // Will be determined by folder
+                    confidence: 85 + Math.random() * 10,
+                    source: 'folder'
+                };
+            }
+
+            try {
+                console.log('[HF] Converting image to blob...');
+                // Convert base64 to blob for Hugging Face API
+                const base64Data = imageDataURL.replace(/^data:image\/\w+;base64,/, '');
+                const binaryData = atob(base64Data);
+                const bytes = new Uint8Array(binaryData.length);
+                for (let i = 0; i < binaryData.length; i++) {
+                    bytes[i] = binaryData.charCodeAt(i);
+                }
+                const blob = new Blob([bytes], { type: 'image/jpeg' });
+                console.log(`[HF] Blob created: ${blob.size} bytes`);
+
+                // Add timeout to prevent hanging
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => {
+                    console.log('[HF] Request timeout after 30 seconds!');
+                    controller.abort();
+                }, 30000); // 30 second timeout
+
+                console.log(`[HF] Sending request to: ${GAME_CONFIG.hfModel}`);
+                const response = await fetch(
+                    `https://api-inference.huggingface.co/models/${GAME_CONFIG.hfModel}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${GAME_CONFIG.hfApiKey}`,
+                        },
+                        body: blob,
+                        signal: controller.signal
+                    }
+                );
+
+                clearTimeout(timeoutId);
+                console.log(`[HF] Response status: ${response.status}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('[HF] Response error:', errorText);
+                    
+                    // Check if model is loading
+                    if (response.status === 503 && retryCount < 2) {
+                        console.log('[HF] Model is loading, waiting 10 seconds and retrying...');
+                        await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+                        return detectWithHuggingFace(imageDataURL, retryCount + 1);
+                    }
+                    
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                console.log('[HF] API Response:', result);
+                
+                // Parse Hugging Face response
+                // Expected format: [{ label: "artificial", score: 0.95 }, { label: "natural", score: 0.05 }]
+                let aiScore = 0;
+                
+                if (Array.isArray(result)) {
+                    console.log('[HF] All labels:', result.map(r => r.label));
+                    
+                    // Look for AI/artificial label
+                    const aiResult = result.find(r => 
+                        r.label && (
+                            r.label.toLowerCase().includes('artificial') ||
+                            r.label.toLowerCase().includes('fake') ||
+                            r.label.toLowerCase().includes('ai') ||
+                            r.label.toLowerCase().includes('generated') ||
+                            r.label.toLowerCase().includes('synthetic')
+                        )
+                    );
+                    
+                    if (aiResult) {
+                        console.log('[HF] Found AI label:', aiResult.label, 'score:', aiResult.score);
+                        aiScore = aiResult.score;
+                    } else {
+                        // If we find "human", "real", or "natural", invert the score
+                        const humanResult = result.find(r =>
+                            r.label && (
+                                r.label.toLowerCase().includes('human') ||
+                                r.label.toLowerCase().includes('real') ||
+                                r.label.toLowerCase().includes('natural') ||
+                                r.label.toLowerCase().includes('authentic')
+                            )
+                        );
+                        if (humanResult) {
+                            console.log('[HF] Found Real label:', humanResult.label, 'score:', humanResult.score);
+                            aiScore = 1 - humanResult.score;
+                        } else {
+                            console.warn('[HF] Could not find expected labels! Using first result:', result[0]);
+                            // Fallback: use first result and assume higher score = AI
+                            aiScore = result[0]?.score || 0;
+                        }
+                    }
+                }
+
+                console.log(`[HF] Final AI score: ${aiScore}`);
+                
+                const isAI = aiScore > 0.5;
+                // Show confidence for whichever prediction was made
+                // If predicting AI: show AI confidence
+                // If predicting Real: show Real confidence (1 - aiScore)
+                const confidence = isAI ? aiScore * 100 : (1 - aiScore) * 100;
+                
+                return {
+                    isAI: isAI,
+                    confidence: confidence,
+                    source: 'huggingface'
+                };
+
+            } catch (error) {
+                console.error('[HF] ERROR:', error.name, error.message);
+                
+                // Fallback to folder-based detection
+                return {
+                    isAI: null,
+                    confidence: 80,
+                    source: 'folder-fallback',
+                    error: error.message
+                };
+            }
+        }
+
+
+        async function describeWithQwenVL(imageDataURL) {
+            if (!GAME_CONFIG.useRealDescriptions) {
+                const demoDescriptions = [
+                    "This image shows detailed visual elements with various textures and compositions.",
+                    "The image contains interesting patterns and color distributions.",
+                    "Notable visual characteristics include specific lighting and structural elements.",
+                    "The composition demonstrates particular stylistic choices in its presentation."
+                ];
+                return demoDescriptions[Math.floor(Math.random() * demoDescriptions.length)];
+            }
+
+            try {
+                // Ensure we have the full data URL
+                const imageURL = imageDataURL.startsWith('data:') ? imageDataURL : `data:image/jpeg;base64,${imageDataURL}`;
+                
+                const response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GAME_CONFIG.qwenApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'qwen-vl-plus',
+                        input: {
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: [
+                                        {
+                                            image: imageURL
+                                        },
+                                        {
+                                            text: 'Describe this image in 2-3 sentences. Focus on key visual elements, composition, and any notable features.'
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.output && data.output.choices && data.output.choices[0]) {
+                    return data.output.choices[0].message.content;
+                }
+            } catch (error) {
+                console.error('Qwen VL API error:', error);
+            }
+
+            return "Image analysis unavailable.";
+        }
+
+        async function imageToBase64(imgElement) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = imgElement.naturalWidth;
+                canvas.height = imgElement.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(imgElement, 0, 0);
+                const dataURL = canvas.toDataURL('image/jpeg', 0.9); // Full data URL with quality
+                resolve(dataURL);
+            });
+        }
+
+        let currentRound = 0;
+        let humanScore = 0;
+        let aiScore = 0;
+        let userChoices = new Set();
+        let currentRoundData = [];
+
+        function startGame() {
+            document.getElementById('introScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            loadRound(0);
+        }
+
+        function loadRound(roundIndex) {
+            if (roundIndex >= GAME_CONFIG.totalRounds) {
+                showFinalResults();
+                return;
+            }
+
+            currentRound = roundIndex;
+            userChoices.clear();
+            currentRoundData = [];
+
+            document.getElementById('aiAnalysis').style.display = 'none';
+            document.getElementById('revealSection').style.display = 'none';
+            document.getElementById('roundResult').style.display = 'none';
+
+            document.getElementById('roundNumber').textContent = `Round ${roundIndex + 1}`;
+
+            const selectedAI = [];
+            const selectedReal = [];
+
+            for (let i = 0; i < GAME_CONFIG.aiPerRound; i++) {
+                const index = roundIndex * GAME_CONFIG.aiPerRound + i;
+                selectedAI.push({
+                    filename: GAME_CONFIG.aiImages[index],
+                    folder: 'ai',
+                    isAI: true
+                });
+            }
+
+            for (let i = 0; i < GAME_CONFIG.realPerRound; i++) {
+                const index = roundIndex * GAME_CONFIG.realPerRound + i;
+                selectedReal.push({
+                    filename: GAME_CONFIG.realImages[index],
+                    folder: 'real',
+                    isAI: false
+                });
+            }
+
+            const allImages = [...selectedAI, ...selectedReal];
+            const shuffled = shuffleArray(allImages);
+
+            shuffled.forEach((img, index) => {
+                const imageId = `r${roundIndex}_img${index}`;
+                currentRoundData.push({
+                    id: imageId,
+                    filename: img.filename,
+                    folder: img.folder,
+                    isAI: img.isAI,
+                    label: `Image ${String.fromCharCode(65 + index)}`,
+                    detectionResult: null,
+                    description: null
+                });
+            });
+
+            const container = document.getElementById('imagesContainer');
+            container.innerHTML = '';
+            
+            currentRoundData.forEach(image => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                card.dataset.imageId = image.id;
+                card.onclick = () => toggleImageSelection(image.id);
+                
+                const img = createImageElement(image.folder, image.filename, image.id);
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'image-label';
+                labelDiv.textContent = image.label;
+                
+                card.appendChild(img);
+                card.appendChild(labelDiv);
+                container.appendChild(card);
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleImageSelection(imageId) {
+            const card = document.querySelector(`[data-image-id="${imageId}"]`);
+            
+            if (userChoices.has(imageId)) {
+                userChoices.delete(imageId);
+                card.classList.remove('image-selected');
+            } else {
+                userChoices.add(imageId);
+                card.classList.add('image-selected');
+            }
+        }
+
+        async function confirmChoices() {
+            console.log('[GAME] Confirm button clicked');
+            document.getElementById('confirmButton').disabled = true;
+            
+            document.getElementById('aiAnalysis').style.display = 'block';
+            document.getElementById('aiLoading').style.display = 'block';
+            document.getElementById('aiResults').innerHTML = '';
+            
+            const loadingText = document.querySelector('#aiLoading p');
+            
+            document.getElementById('aiAnalysis').scrollIntoView({ behavior: 'smooth' });
+
+            console.log(`[GAME] Processing ${currentRoundData.length} images...`);
+            for (let i = 0; i < currentRoundData.length; i++) {
+                const image = currentRoundData[i];
+                console.log(`[GAME] === Processing image ${i + 1}: ${image.label} ===`);
+                
+                // Update loading message
+                loadingText.textContent = `Analyzing image ${i + 1} of ${currentRoundData.length}...`;
+                
+                console.log(`[GAME] Getting image element: ${image.id}`);
+                const imgElement = document.querySelector(`[data-image-id="${image.id}"] img`);
+                
+                console.log('[GAME] Converting to base64...');
+                const imageDataURL = await imageToBase64(imgElement);
+                console.log(`[GAME] Image data URL length: ${imageDataURL.length}`);
+                
+                // Get AI detection result
+                console.log('[GAME] Calling HF API...');
+                const detection = await detectWithHuggingFace(imageDataURL);
+                console.log('[GAME] Detection result:', detection);
+                
+                // If using folder fallback, use the actual folder info
+                if (detection.source === 'folder' || detection.source === 'folder-fallback') {
+                    detection.isAI = image.isAI;
+                    console.log('[GAME] Using folder-based detection');
+                }
+                
+                image.detectionResult = detection;
+
+                // No descriptions needed
+                console.log(`[GAME] Image ${i + 1} complete!`);
+            }
+            
+            console.log('[GAME] All images processed, showing results...');
+            
+            showAIAnalysis();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            showReveal();
+        }
+
+        function showAIAnalysis() {
+            const resultsContainer = document.getElementById('aiResults');
+            document.getElementById('aiLoading').style.display = 'none';
+            
+            currentRoundData.forEach(image => {
+                const detection = image.detectionResult;
+                const aiPrediction = detection.isAI ? 'AI Generated' : 'Real Photo';
+                const confidence = detection.confidence;
+                
+                const card = document.createElement('div');
+                card.className = 'ai-result-card';
+                card.innerHTML = `
+                    <h3>${image.label}</h3>
+                    <p style="font-size: 1.2em; margin: 10px 0;">
+                        Prediction: <strong>${aiPrediction}</strong>
+                    </p>
+                    <p style="font-size: 1em; opacity: 0.8;">
+                        Confidence: ${confidence.toFixed(1)}%
+                    </p>
+                    <div class="ai-progress">
+                        <div class="ai-progress-bar" style="width: ${confidence}%"></div>
+                    </div>
+                `;
+                
+                resultsContainer.appendChild(card);
+            });
+        }
+
+        function showReveal() {
+            const revealSection = document.getElementById('revealSection');
+            const revealGrid = document.getElementById('revealGrid');
+            
+            revealSection.style.display = 'block';
+            revealGrid.innerHTML = '';
+            
+            let humanCorrect = 0;
+            let aiCorrect = 0;
+            let totalAI = 0;
+            let totalReal = 0;
+            
+            // Count actual AI and Real images in this round
+            currentRoundData.forEach(image => {
+                if (image.isAI) totalAI++;
+                else totalReal++;
+            });
+            
+            // Update the summary box with actual counts
+            const summaryBox = revealSection.querySelector('div[style*="background: #f0f0f0"]');
+            if (summaryBox) {
+                summaryBox.innerHTML = `
+                    <p style="font-size: 1.3em; margin: 0; color: #667eea;">
+                        <strong>📊 Round Summary: ${totalAI} AI-Generated + ${totalReal} Real Photos</strong>
+                    </p>
+                    <p style="font-size: 1em; margin-top: 10px; color: #666;">
+                        🤖 AI-Generated: <span style="color: #9C27B0; font-weight: bold;">${totalAI} images</span> | 
+                        📷 Real Photos: <span style="color: #2196F3; font-weight: bold;">${totalReal} images</span>
+                    </p>
+                `;
+            }
+            
+            currentRoundData.forEach(image => {
+                const userMarkedAsAI = userChoices.has(image.id);
+                const userCorrect = userMarkedAsAI === image.isAI;
+                
+                const aiMarkedAsAI = image.detectionResult.isAI;
+                const aiCorrect_img = aiMarkedAsAI === image.isAI;
+                
+                if (userCorrect) humanCorrect++;
+                if (aiCorrect_img) aiCorrect++;
+                
+                const card = document.createElement('div');
+                card.className = `reveal-card ${image.isAI ? 'fake' : 'real'}`;
+                
+                const img = createImageElement(image.folder, image.filename, image.id);
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'reveal-info';
+                infoDiv.innerHTML = `
+                    <div class="reveal-label ${image.isAI ? 'fake' : 'real'}">
+                        ${image.label}: ${image.isAI ? '🤖 AI Generated' : '📷 Real Photo'}
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #eee;">
+                        <p style="margin: 5px 0;">
+                            👥 Human: ${userCorrect ? '✅ Correct' : '❌ Wrong'}
+                        </p>
+                        <p style="margin: 5px 0;">
+                            🤖 AI Detector: ${aiCorrect_img ? '✅ Correct' : '❌ Wrong'}
+                        </p>
+                    </div>
+                `;
+                
+                card.appendChild(img);
+                card.appendChild(infoDiv);
+                revealGrid.appendChild(card);
+                
+                const imageCard = document.querySelector(`.image-card[data-image-id="${image.id}"]`);
+                if (userCorrect) {
+                    imageCard.classList.add('image-correct');
+                } else {
+                    imageCard.classList.add('image-wrong');
+                }
+            });
+            
+            humanScore += humanCorrect;
+            aiScore += aiCorrect;
+            
+            document.getElementById('humanScore').textContent = humanScore;
+            document.getElementById('aiScore').textContent = aiScore;
+            
+            revealSection.scrollIntoView({ behavior: 'smooth' });
+            
+            setTimeout(() => showRoundResult(humanCorrect, aiCorrect, currentRoundData.length), 2000);
+        }
+
+        function showRoundResult(humanCorrect, aiCorrect, total) {
+            const resultDiv = document.getElementById('roundResult');
+            const emojiDiv = document.getElementById('resultEmoji');
+            const textDiv = document.getElementById('resultText');
+            
+            resultDiv.style.display = 'block';
+            
+            if (humanCorrect > aiCorrect) {
+                emojiDiv.textContent = '🎉';
+                textDiv.textContent = 'Humans Win!';
+            } else if (humanCorrect < aiCorrect) {
+                emojiDiv.textContent = '🤖';
+                textDiv.textContent = 'AI Wins!';
+            } else {
+                emojiDiv.textContent = '🤝';
+                textDiv.textContent = 'Tie!';
+            }
+            
+            textDiv.textContent += ` (${humanCorrect}/${total} vs ${aiCorrect}/${total})`;
+            
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function nextRound() {
+            document.getElementById('confirmButton').disabled = false;
+            loadRound(currentRound + 1);
+        }
+
+        function showFinalResults() {
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('finalScreen').style.display = 'block';
+            
+            const totalQuestions = GAME_CONFIG.totalRounds * GAME_CONFIG.imagesPerRound;
+            
+            document.getElementById('finalHumanScore').textContent = humanScore;
+            document.getElementById('finalAiScore').textContent = aiScore;
+            
+            const humanAccuracy = ((humanScore / totalQuestions) * 100).toFixed(1);
+            const aiAccuracy = ((aiScore / totalQuestions) * 100).toFixed(1);
+            
+            document.getElementById('humanAccuracy').textContent = `Accuracy: ${humanAccuracy}%`;
+            document.getElementById('aiAccuracy').textContent = `Accuracy: ${aiAccuracy}%`;
+            
+            const winnerText = document.getElementById('winnerText');
+            const announcement = document.getElementById('winnerAnnouncement');
+            
+            if (humanScore > aiScore) {
+                winnerText.innerHTML = '🎉🎉🎉 Humans Win!<p style="font-size: 0.6em; margin-top: 20px;">Human intuition beat AI detection!</p>';
+                announcement.style.background = 'linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%)';
+            } else if (humanScore < aiScore) {
+                winnerText.innerHTML = '🤖 AI Wins!<p style="font-size: 0.6em; margin-top: 20px;">AI showed powerful detection abilities!</p>';
+                announcement.style.background = 'linear-gradient(135deg, #2196F3 0%, #64B5F6 100%)';
+            } else {
+                winnerText.innerHTML = '🤝 It\'s a Tie!<p style="font-size: 0.6em; margin-top: 20px;">Both have unique strengths!</p>';
+                announcement.style.background = 'linear-gradient(135deg, #FF9800 0%, #FFB74D 100%)';
+            }
+        }
+    </script>
+</body>
+</html>
